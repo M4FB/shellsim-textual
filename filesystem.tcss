@@ -1,0 +1,32 @@
+
+#main_container{
+    layout: grid;
+    grid-size: 8 5;
+    grid-gutter: 1 2;
+    grid-columns: 1fr;
+    grid-rows: 2fr 1fr 1fr;
+    margin: 1 2;
+    min-height: 25;
+    min-width: 26;
+    height: 100%;
+
+}
+
+#p1{
+    column-span:6;
+    row-span:4;
+}
+#p2{
+    layout: grid;
+    grid-size: 4 4;
+    row-span:3;
+    column-span: 2;
+}
+#p3{
+    row-span:2;
+    column-span: 2;
+}
+#p4{
+    column-span:6;
+}
+
