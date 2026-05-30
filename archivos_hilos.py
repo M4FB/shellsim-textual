@@ -75,64 +75,59 @@ def ejecutar(fn, args: tuple):
     return resultado
 
 
-def _imprimir_resultado(resultado: dict):
+def _imprimir_resultado(resultado: dict) -> str:
     if "error" in resultado:
-        print(f"  ✗ {resultado['error']}")
+        return (f"  ✗ {resultado['error']}")
     elif "ok" in resultado:
-        print(f"  ✓ {resultado['ok']}")
+        return (f"  ✓ {resultado['ok']}")
     elif "salida" in resultado:
-        print(resultado["salida"])
+        return (resultado["salida"])
 
 #Comandos de navegación y creación
-def cmd_mkdir(nombre: str) -> None:
+def cmd_mkdir(nombre: str) -> str:
     global GPWD
     registros = _cargar_registros()
     # Verificar que no exista ya un directorio con ese nombre en el directorio actual
     for r in registros:
         if r["nombre"] == nombre and r["padre"] == GPWD and r["tipo"] == "DIR":
-            print(f"Error: el directorio '{nombre}' ya existe.")
-            return
+            return (f"Error: el directorio '{nombre}' ya existe.")
     nuevo_id = _siguiente_id()
     escritura(nuevo_id, nombre, "DIR", GPWD, "rwx", "-")
-    print(f"Directorio '{nombre}' creado correctamente.")
+    return (f"Directorio '{nombre}' creado correctamente.")
 
-def cmd_cd(destino: str) -> None:
+def cmd_cd(destino: str) -> str:
     global GPWD
     registros = _cargar_registros()
 
     if destino == "..":
         if GPWD == 0:
-            print("Ya estás en el directorio raíz.")
-            return
+            return ("Ya estás en el directorio raíz.")
         actual = next((r for r in registros if r["id"] == GPWD), None)
         if actual:
             GPWD = actual["padre"]
             ruta = _ruta_actual(registros)
-            print(f"Directorio actual cambiado a: {ruta}")
-        return
+            return (f"Directorio actual cambiado a: {ruta}")
 
     # Buscar el directorio destino dentro del directorio actual
     for r in registros:
         if r["nombre"] == destino and r["padre"] == GPWD and r["tipo"] == "DIR":
             GPWD = r["id"]
             ruta = _ruta_actual(registros)
-            print(f"Directorio actual cambiado a: {ruta}")
-            return
+            return (f"Directorio actual cambiado a: {ruta}")
 
-    print(f"Error: directorio '{destino}' no encontrado.")
+    return (f"Error: directorio '{destino}' no encontrado.")
 
 
-def cmd_touch(nombre: str) -> None:
+def cmd_touch(nombre: str) -> str:
     global GPWD
     registros = _cargar_registros()
     # Verificar que no exista ya un archivo con ese nombre en el directorio actual
     for r in registros:
         if r["nombre"] == nombre and r["padre"] == GPWD and r["tipo"] == "FILE":
-            print(f"Error: el archivo '{nombre}' ya existe.")
-            return
+            return (f"Error: el archivo '{nombre}' ya existe.")
     nuevo_id = _siguiente_id()
     escritura(nuevo_id, nombre, "FILE", GPWD, "rw-", "0")
-    print(f"Archivo '{nombre}' creado correctamente.")
+    return (f"Archivo '{nombre}' creado correctamente.")
 
 
 def _ruta_actual(registros: list[dict]) -> str:
@@ -149,70 +144,72 @@ def _ruta_actual(registros: list[dict]) -> str:
     return "/" + "/".join(partes) if partes else "/"
 
 #Comandos de consulta y modificación
-def cmd_ls(detallado: bool = False) -> None:
+def cmd_ls(detallado: bool = False) -> str:
     registros = _cargar_registros()
     hijos = [r for r in registros if r["padre"] == GPWD]
     if not hijos:
-        print("(directorio vacío)")
-        return
+        return("(directorio vacío)")
+    
+    lineas = []
+
     if detallado:
-        print(f"{'ID':<4} | {'TIPO':<4} | {'PERMISOS':<8} | {'TAMAÑO':<6} | NOMBRE")
+        lineas.append(f"{'ID':<4} | {'TIPO':<4} | {'PERMISOS':<8} | {'TAMAÑO':<6} | NOMBRE")
         for r in hijos:
-            print(f"{r['id']:<4} | {r['tipo']:<4} | {r['permisos']:<8} | {r['tamanio']:<6} | {r['nombre']}")
+            lineas.append(f"{r['id']:<4} | {r['tipo']:<4} | {r['permisos']:<8} | {r['tamanio']:<6} | {r['nombre']}")
     else:
         for r in hijos:
-            print(r["nombre"])
+            lineas.append(r["nombre"])
+    return "\n".join(lineas)
 
-def cmd_chmod(permisos: str, nombre: str) -> None:
+def cmd_chmod(permisos: str, nombre: str) -> str:
     if len(permisos) != 3 or not all(c in "rwx-" for c in permisos):
-        print("Error: permisos inválidos. Formato esperado: rwx, r--, rw-, etc.")
-        return
+        return ("Error: permisos inválidos. Formato esperado: rwx, r--, rw-, etc.")
     registros = _cargar_registros()
     for r in registros:
         if r["nombre"] == nombre and r["padre"] == GPWD:
             r["permisos"] = permisos
             _guardar_registros(registros)
-            print(f"Permisos de '{nombre}' cambiados a {permisos}.")
-            return
-    print(f"Error: '{nombre}' no encontrado en el directorio actual.")
+            return (f"Permisos de '{nombre}' cambiados a {permisos}.")
+    return (f"Error: '{nombre}' no encontrado en el directorio actual.")
 
-def cmd_rm(nombre: str) -> None:
+def cmd_rm(nombre: str) -> str:
     registros = _cargar_registros()
     for r in registros:
         if r["nombre"] == nombre and r["padre"] == GPWD and r["tipo"] == "FILE":
             registros.remove(r)
             _guardar_registros(registros)
-            print(f"Archivo '{nombre}' eliminado correctamente.")
-            return
-    print(f"Error: archivo '{nombre}' no encontrado en el directorio actual.")
+            return (f"Archivo '{nombre}' eliminado correctamente.")
+    return (f"Error: archivo '{nombre}' no encontrado en el directorio actual.")
 
-def _crear_archivo_hilo(n: int) -> None:
+def _crear_archivo_hilo(n: int, mensajes: list) -> None:
     nombre = f"hilo_{n}.txt"
-    print(f"Hilo {n} creando archivo {nombre}")
     nuevo_id = _siguiente_id()
     escritura(nuevo_id, nombre, "FILE", GPWD, "rw-", "0")
+    mensajes.append(f"Hilo {n} creando archivo {nombre}")
 
-def cmd_test_hilos() -> None:
-    print("Iniciando prueba concurrente con hilos...")
-    hilos = [threading.Thread(target=_crear_archivo_hilo, args=(i,)) for i in range(1, 6)]
+def cmd_test_hilos() -> str:
+    mensajes = []
+    hilos = [threading.Thread(target=_crear_archivo_hilo, args=(i, mensajes)) for i in range(1, 6)]
     for h in hilos:
         h.start()
     for h in hilos:
         h.join()
-    print("Todos los hilos finalizaron correctamente.")
+    return "Iniciando prueba concurrente ...\n" + "\n".join(mensajes) + "\nTodos los hilos finalizaron."
 
-def _mostrar_cabecera() -> None:
-    print("========================================")
-    print("       SIMULADOR FAT EN PYTHON          ")
-    print("========================================")
-    print("Sistema FAT inicializado correctamente.")
+def _mostrar_cabecera() -> str:
+    cabecera = []
+    cabecera.append("========================================")
+    cabecera.append("       SIMULADOR FAT EN PYTHON          ")
+    cabecera.append("========================================")
+    cabecera.append("Sistema FAT inicializado correctamente.")
     registros = _cargar_registros()
-    print(f"Directorio actual: {_ruta_actual(registros)}")
-    print("Comandos disponibles:")
-    print("  mkdir <nombre>   cd <nombre>   cd ..")
-    print("  touch <nombre>   ls            ls -l")
-    print("  chmod <permisos> <nombre>      rm <nombre>")
-    print("  test_hilos       exit")
+    cabecera.append(f"Directorio actual: {_ruta_actual(registros)}")
+    cabecera.append("Comandos disponibles:")
+    cabecera.append("  mkdir <nombre>   cd <nombre>   cd ..")
+    cabecera.append("  touch <nombre>   ls            ls -l")
+    cabecera.append("  chmod <permisos> <nombre>      rm <nombre>")
+    cabecera.append("  test_hilos       exit")
+    return "\n".join(cabecera)
 
 def main() -> None:
     inicializar_fat()
@@ -237,21 +234,21 @@ def main() -> None:
             print("Saliendo del simulador FAT...")
             break
         elif cmd == "mkdir" and len(partes) == 2:
-            cmd_mkdir(partes[1])
+            print(cmd_mkdir(partes[1]))
         elif cmd == "cd" and len(partes) == 2:
-            cmd_cd(partes[1])
+            print(cmd_cd(partes[1]))
         elif cmd == "touch" and len(partes) == 2:
-            cmd_touch(partes[1])
+            print(cmd_touch(partes[1]))
         elif cmd == "ls" and len(partes) == 1:
-            cmd_ls()
+            print(cmd_ls())
         elif cmd == "ls" and len(partes) == 2 and partes[1] == "-l":
-            cmd_ls(detallado=True)
+            print(cmd_ls(detallado=True))
         elif cmd == "chmod" and len(partes) == 3:
-            cmd_chmod(partes[1], partes[2])
+            print(cmd_chmod(partes[1], partes[2]))
         elif cmd == "rm" and len(partes) == 2:
-            cmd_rm(partes[1])
+            print(cmd_rm(partes[1]))
         elif cmd == "test_hilos":
-            cmd_test_hilos()
+            print(cmd_test_hilos())
         else:
             print(f"Comando no reconocido: '{entrada}'")
 
