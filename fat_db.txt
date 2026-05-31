@@ -6,3 +6,11 @@
 5 | hilo_3.txt | FILE | 1 | rw- | 0
 5 | hilo_2.txt | FILE | 1 | rw- | 0
 6 | hilo_5.txt | FILE | 1 | rw- | 0
+7 | tes2 | DIR | 0 | rwx | -
+8 | file.tst | FILE | 7 | rw- | 0
+9 | res.to | FILE | 7 | rw- | 0
+10 | file1.ts | FILE | 0 | rw- | 0
+11 | manzanita.txt | FILE | 0 | rw- | 0
+12 | llantita.tonton | FILE | 0 | rw- | 0
+13 | llanton | DIR | 0 | rwx | -
+14 | manzana | DIR | 0 | rwx | -
