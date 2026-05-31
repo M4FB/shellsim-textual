@@ -35,11 +35,28 @@ class PlaceholderApp(App):
         log.write_line(str(now) + "]> " + event.value)
 
         partes = event.value.strip().split()
-        if partes and partes[0] == "cd" and len (partes) == 2:
-             cmd_cd(partes[1])
-             registros = _cargar_registros()
-             ruta = _ruta_actual(registros)
-             event.input.placeholder = f"[{ruta}]"
+        cmd = partes[0]
+
+        if cmd == "exit":
+            log.write_line("Saliendo del simulador FAT...")
+        elif cmd == "mkdir" and len(partes) == 2:
+            log.write_line(cmd_mkdir(partes[1]))
+        elif cmd == "cd" and len(partes) == 2:
+            log.write_line(cmd_cd(partes[1]))
+        elif cmd == "touch" and len(partes) == 2:
+            log.write_line(cmd_touch(partes[1]))
+        elif cmd == "ls" and len(partes) == 1:
+            log.write_line(cmd_ls())
+        elif cmd == "ls" and len(partes) == 2 and partes[1] == "-l":
+            log.write_line(cmd_ls(detallado=True))
+        elif cmd == "chmod" and len(partes) == 3:
+            log.write_line(cmd_chmod(partes[1], partes[2]))
+        elif cmd == "rm" and len(partes) == 2:
+            log.write_line(cmd_rm(partes[1]))
+        elif cmd == "test_hilos":
+            log.write_line(cmd_test_hilos())
+        else:
+            log.write_line(f"Comando no reconocido: '{event.value}'")
 
 
 
