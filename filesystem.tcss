@@ -17,14 +17,13 @@
     row-span:4;
 }
 #p2{
-    layout: grid;
-    grid-size: 4 4;
     row-span:3;
     column-span: 2;
 }
 #p3{
-    row-span:2;
+    row-span:1;
     column-span: 2;
+    background: $surface;
 }
 #p4{
     column-span:6;

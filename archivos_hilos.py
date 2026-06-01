@@ -1,7 +1,4 @@
 import threading
-import time
-import random
-from datetime import datetime
 import os
 
 lock = threading.Lock()
@@ -213,7 +210,7 @@ def _mostrar_cabecera() -> str:
 
 def main() -> None:
     inicializar_fat()
-    _mostrar_cabecera()
+    print (_mostrar_cabecera())
 
     while True:
         registros = _cargar_registros()
